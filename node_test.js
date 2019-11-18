@@ -61,7 +61,7 @@ function cancelOrder(order_to_cancel) {
 
 function cancelOpenBuyOrdersTooHigh(open_buy_orders, new_bid_max) {
   const open_buy_orders_to_cancel = open_buy_orders.filter(function(open_buy_order) {
-    return open_buy_order.price > new_bid_max;
+    return open_buy_order.price > new_bid_max || open_buy_order.price < new_bid_max - 0.15;
   });
 
   open_buy_orders_to_cancel.forEach((order_to_cancel) => {
@@ -81,7 +81,7 @@ function cancelBulkBuyOrders(open_buy_orders, current_position) {
     sum += order.quantity;
     //console.log(25000 - current_position);
     //console.log(chalk.cyan("Cumulative sum:", sum));
-    if (sum > 20000 - current_position) {
+    if (sum > 13000 - current_position) {
       cancelOrder(order);
     }
   });
@@ -149,7 +149,8 @@ function cancelBulkSellOrders(open_sell_orders, current_position) {
 
   open_sell_orders.forEach((order) => {
     sum += order.quantity;
-    if (sum > 25000 - current_position) {
+    //console.log(10000 - current_position);
+    if (sum > 13000 - current_position) {
       cancelOrder(order);
     }
   });
@@ -157,7 +158,7 @@ function cancelBulkSellOrders(open_sell_orders, current_position) {
 
 function cancelOpenSellOrdersTooLow(open_sell_orders, new_ask_min) {
   const open_sell_orders_to_cancel = open_sell_orders.filter(function(open_sell_order) {
-    return open_sell_order.price < new_ask_min;
+    return open_sell_order.price < new_ask_min || open_sell_order.price > new_ask_min + 0.15;
   });
 
   open_sell_orders_to_cancel.forEach((order_to_cancel) => {
@@ -168,8 +169,8 @@ function cancelOpenSellOrdersTooLow(open_sell_orders, new_ask_min) {
 
 function getBidAskOrderQuantity(current_position) {
   // 10000 / (1+e^(-0.0002x)) from [-25000 to 25000]
-  const ask_quantity = Math.round(20000 / (1 + Math.exp(-0.0002 * current_position)));
-  const bid_quantity = Math.round(20000 - ask_quantity);
+  const ask_quantity = Math.round(15000 / (1 + Math.exp(-0.0002 * current_position)));
+  const bid_quantity = Math.round(15000 - ask_quantity);
   return {
     max_bid_quantity: bid_quantity,
     max_ask_quantity: ask_quantity,
@@ -177,7 +178,7 @@ function getBidAskOrderQuantity(current_position) {
 }
 
 function placeOrders(current_position, pending_bid_quantity, pending_ask_quantity, bids_max_price, asks_min_price) {
-  if ((asks_min_price - bids_max_price) > 0.02) {
+  if (asks_min_price - bids_max_price > 0.04) {
     //console.log(chalk.cyan("Placing order!"));
     const type = 'LIMIT';
     const { max_bid_quantity, max_ask_quantity } = getBidAskOrderQuantity(current_position);
@@ -439,8 +440,8 @@ queries = setInterval(function() {
       counter += 1;
     }
   });
-}, 5);
+}, 8);
 
 orders = setInterval(function() {
   placeOrders(current_position, pending_bid_quantity, pending_ask_quantity, bids_max_price, asks_min_price);
-}, 50);
+}, 75);
